@@ -13,6 +13,11 @@ jobs:
       run:
         shell: bash
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
       - name: Empty commit generation
         run: |
           git commit --allow-empty -m "chore(bot): Automatic prerelease generation at PR opening"
+          git push
