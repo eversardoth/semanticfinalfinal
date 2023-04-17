@@ -1,0 +1,89 @@
+name: Release workflow
+run-name: Release workflow
+permissions:
+  actions: write
+  contents: write
+  issues: write
+  pull-requests: write
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+  # pull_request:
+  #   branches:
+  #     - main
+jobs:
+  release:
+    defaults:
+      run:
+        shell: bash
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Release generation
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.ref_name == 'main' && github.event_name == 'push'
+        run: |
+          npm install -g @google/semantic-release-replace-plugin
+          npm install -g @semantic-release/git
+          npm install -g semantic-release
+          npx semantic-release --debug
+      - name: Prerelease validation
+        id: prerelease_validation
+        if: startsWith(github.ref_name,'feature') && github.event_name == 'push'
+        uses: actions/github-script@v6
+        with:
+          retries: 3
+          script: |
+            const query = `query($owner:String!, $name:String!, $baseRefName:String!, $headRefName:String!, $states:[PullRequestState!]!){
+              repository(owner:$owner, name:$name){
+                pullRequests(baseRefName: $baseRefName, headRefName: $headRefName, states:$states, first: 1){
+                  nodes{
+                    mergeStateStatus
+                  }
+                }
+              }
+            }`;
+
+            const variables = {
+              owner: context.repo.owner,
+              name: context.repo.repo,
+              baseRefName: "main",
+              headRefName: process.env.GITHUB_REF_NAME,
+              states: ["OPEN"],
+              headers: {
+                Accept: `application/vnd.github.merge-info-preview+json`
+              }
+            };
+
+            const result = await github.graphql(query, variables);
+
+            const merge_state = result.repository.pullRequests.nodes[0];
+
+            if(merge_state && merge_state.mergeStateStatus !== 'BEHIND' && merge_state.mergeStateStatus !== 'DIRTY'){
+              core.setOutput("generate_prerelease", "yes");
+            }
+      - name: Prerelease generation
+        if: steps.prerelease_validation.outputs.generate_prerelease == 'yes'
+        run: |
+          npm install -g @google/semantic-release-replace-plugin
+          npm install -g @semantic-release/git
+          npm install -g semantic-release
+          npx semantic-release --debug
+
+  #     - name: Pre-release branch generation and manual workflow execution
+  #       env:
+  #         pr_number: ${{ github.event.number }}
+  #         head_ref: ${{ github.head_ref }}
+  #         commit_sha: ${{ github.event.pull_request.head.sha }}
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       if: github.event_name == 'pull_request' && github.base_ref == 'main'
+  #       run: |
+  #         gh workflow run prerelease.yml --ref "${head_ref}" -f pr_number="${pr_number}" -f commit_sha="${commit_sha}"
+  # prerelease:
+  #   uses: ./.github/workflows/prerelease2.yml
+  #   if: false && github.event_name == 'pull_request' && github.base_ref == 'main'
