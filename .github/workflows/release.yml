@@ -70,6 +70,8 @@ jobs:
       - name: Prerelease generation
         if: steps.prerelease_validation.outputs.generate_prerelease == 'yes'
         run: |
+          sed -i s/'branch_name'/'${{ github.ref_name }}'/ .releaserc
+          sed -i s/'pr_number'/PR${PR_NUMBER}/ .releaserc
           npm install -g @google/semantic-release-replace-plugin
           npm install -g @semantic-release/git
           npm install -g semantic-release
