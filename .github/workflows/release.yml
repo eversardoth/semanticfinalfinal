@@ -44,6 +44,7 @@ jobs:
                 pullRequests(baseRefName: $baseRefName, headRefName: $headRefName, states:$states, first: 1){
                   nodes{
                     mergeStateStatus
+                    number
                   }
                 }
               }
@@ -66,11 +67,13 @@ jobs:
 
             if(merge_state && merge_state.mergeStateStatus !== 'BEHIND' && merge_state.mergeStateStatus !== 'DIRTY'){
               core.setOutput("generate_prerelease", "yes");
+              core.setOuput("pr_number", `${merge_state.number}`);
             }
       - name: Prerelease generation
         if: steps.prerelease_validation.outputs.generate_prerelease == 'yes'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.prerelease_validation.outputs.pr_number }}
         run: |
           sed -i s!'branch_name'!'${{ github.ref_name }}'! .releaserc
           sed -i s!'pr_number'!PR${PR_NUMBER}! .releaserc
