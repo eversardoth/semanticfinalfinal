@@ -15,4 +15,4 @@ jobs:
     steps:
       - name: Empty commit generation
         run: |
-          git --allow-empty -m "chore(bot): Automatic prerelease generation at PR opening"
+          git commit --allow-empty -m "chore(bot): Automatic prerelease generation at PR opening"
