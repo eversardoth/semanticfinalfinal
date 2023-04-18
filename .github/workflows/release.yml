@@ -67,7 +67,7 @@ jobs:
 
             if(merge_state && merge_state.mergeStateStatus !== 'BEHIND' && merge_state.mergeStateStatus !== 'DIRTY'){
               core.setOutput("generate_prerelease", "yes");
-              core.setOuput("pr_number", `${merge_state.number}`);
+              core.setOutput("pr_number", `${merge_state.number}`);
             }
       - name: Prerelease generation
         if: steps.prerelease_validation.outputs.generate_prerelease == 'yes'

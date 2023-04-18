@@ -20,7 +20,7 @@ jobs:
         with:
           retries: 3
           script: |
-            const lastPrereleaseWorKflow = await github.rest.actions.listWorkflowRuns({
+            const lastPrereleaseWorkflow = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: "release.yml",
