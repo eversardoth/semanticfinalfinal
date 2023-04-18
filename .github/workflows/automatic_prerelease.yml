@@ -6,6 +6,7 @@ on:
       - opened
 permissions:
   contents: write
+  actions: write
 jobs:
   trigger:
     runs-on: ubuntu-latest
