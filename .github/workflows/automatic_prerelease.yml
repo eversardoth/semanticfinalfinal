@@ -32,7 +32,9 @@ jobs:
             console.log(JSON.stringify(lastPrereleaseWorkflow));
 
             if (lastPrereleaseWorkflow && lastPrereleaseWorkflow.total_count === 1){
+
               const run_id = lastPrereleaseWorkflow.actions.workflow_runs[0].id;
+              console.log('hola', run_id );
               await github.rest.actions.reRunWorkflow({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
