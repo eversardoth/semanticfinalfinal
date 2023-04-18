@@ -13,15 +13,29 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.head_ref }}
-      - name: Empty commit generation
+      - uses: actions/github-script@v6
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit --allow-empty -m "chore(bot): Automatic prerelease generation at PR opening"
-          git push
+          head_ref: ${{ github.head_ref }}
+          head_sha: ${{ github.event.pull_request.head.sha }}
+        with:
+          retries: 3
+          script: |
+            const lastPrereleaseWorKflow = await github.rest.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: "release.yml",
+              branch: process.env.head_ref,
+              head_sha: process.env.head_sha,
+              per_page: 1
+            });
+
+            if (lastPrereleaseWorkflow && lastPrereleaseWorkflow.total_count === 1){
+              const run_id = lastPrereleaseWorkflow.workflow_runs[0].id;
+              await github.rest.actions.reRunWorkflow({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run_id
+              });
+            }
+
+
