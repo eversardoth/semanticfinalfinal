@@ -42,7 +42,7 @@ jobs:
 
   ander:
     runs-on: ubuntu-latest
-    if: inputs.name == "ever" || inputs.name == "greet" || inputs.name == 'ander'
+    if: inputs.name == 'ever' || inputs.name == 'greet' || inputs.name == 'ander'
     needs: ever
     steps:
       - name: hi
