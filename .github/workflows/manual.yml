@@ -38,7 +38,9 @@ jobs:
     needs: greet
     steps:
       - name: hi
-        run: echo "hiiii"
+        run: |
+          echo "hiiii"
+          exit 1
 
   ander:
     runs-on: ubuntu-latest
