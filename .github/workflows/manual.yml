@@ -34,7 +34,7 @@ jobs:
 
   ever:
     runs-on: ubuntu-latest
-    if: inputs.name == 'ever' || inputs.name == 'greet'
+    if: always() && !cancelled() && !failure() && (inputs.name == 'ever' || inputs.name == 'greet')
     needs: greet
     steps:
       - name: hi
@@ -42,7 +42,7 @@ jobs:
 
   ander:
     runs-on: ubuntu-latest
-    if: inputs.name == 'ever' || inputs.name == 'greet' || inputs.name == 'ander'
+    if: always() && !cancelled() && !failure() && (inputs.name == 'ever' || inputs.name == 'greet' || inputs.name == 'ander')
     needs: ever
     steps:
       - name: hi
